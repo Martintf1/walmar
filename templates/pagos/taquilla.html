@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% load walmar %}
+{% block titulo %}Taquilla{% endblock %}
+{% block contenido %}
+<h1>Punto de atención y venta</h1>
+<div class="grid grid-2">
+  <div class="tarjeta">
+    <h2>Registrar pago en efectivo</h2>
+    <form method="get" class="fila">
+      <input type="text" name="codigo" value="{{ codigo }}" placeholder="Código de reserva (R-XXXX-XXXX)" class="codigo-input" style="flex:1;min-width:200px" required>
+      <button class="btn">Buscar</button>
+    </form>
+  </div>
+  <div class="tarjeta">
+    <h2>Mis cobros de hoy</h2>
+    {% for p in pagos_hoy %}<div class="fila entre pequeno"><span>{{ p.confirmado_en|time:"H:i" }} · {{ p.reserva.codigo }}</span><a href="{% url 'pagos:comprobante' p.referencia %}">{{ p.valor|cop }}</a></div>
+    {% empty %}<p class="texto-2">Sin cobros registrados hoy.</p>{% endfor %}
+  </div>
+</div>
+<div class="tarjeta mt">
+  <h2>Vender pasajes (próximas salidas)</h2>
+  <div class="tabla-wrap"><table>
+    <thead><tr><th>Fecha</th><th>Hora</th><th>Ruta</th><th>Lancha</th><th class="num">Cupos</th><th class="num">Tarifa</th><th></th></tr></thead>
+    <tbody>{% for v in viajes %}
+      <tr><td>{{ v.fecha|date:"D d/m" }}</td><td>{{ v.hora_vigente|time:"H:i" }}</td><td>{{ v.origen }} → {{ v.destino }}</td><td>{{ v.lancha.nombre }}</td>
+      <td class="num">{{ v.cupos_disponibles }}</td><td class="num">{{ v.tarifa|cop }}</td>
+      <td>{% if v.cupos_disponibles %}<a class="btn btn-chico" href="{% url 'reservas:reservar' v.pk %}">Vender</a>{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="7">No hay salidas a la venta en los próximos días.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}

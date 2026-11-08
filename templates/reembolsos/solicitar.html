@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% load walmar %}
+{% block titulo %}Solicitar devolución{% endblock %}
+{% block contenido %}
+<div class="tarjeta" style="max-width:680px;margin:0 auto">
+  <h1>Solicitud de cancelación o devolución</h1>
+  <p>Reserva <strong>{{ reserva.codigo }}</strong> · {{ reserva.viaje }} · {{ reserva.total|cop }}</p>
+  <p class="pequeno texto-2">Se registrará la fecha y hora de su aviso. El transportador revisará la solicitud según la <a href="{% url 'core:politica_cancelacion' %}" target="_blank" rel="noopener">política aprobada</a> y la normativa; el valor a devolver depende de la causa y del aviso previo.</p>
+  <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}{% include "includes/form.html" %}
+    <div class="fila"><button class="btn" type="submit">Radicar solicitud</button><a class="btn btn-sec" href="{% url 'reservas:detalle' reserva.codigo %}">Volver</a></div></form>
+</div>
+{% endblock %}

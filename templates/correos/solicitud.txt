@@ -1,0 +1,9 @@
+Hola {{ solicitud.solicitante.nombre }},
+
+Su solicitud #{{ solicitud.pk }} sobre la reserva {{ solicitud.reserva.codigo }} está en estado: {{ solicitud.get_estado_display }}.
+{% if solicitud.justificacion %}
+Justificación: {{ solicitud.justificacion }}{% endif %}{% if solicitud.valor_autorizado is not None %}
+Valor autorizado: ${{ solicitud.valor_autorizado|floatformat:0 }} COP{% endif %}{% if solicitud.referencia_devolucion %}
+Referencia de la devolución: {{ solicitud.referencia_devolucion }}{% endif %}
+
+— WALMAR

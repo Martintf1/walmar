@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block titulo %}Viajes{% endblock %}
+{% block contenido %}
+<div class="fila entre mb"><h1 class="m0">Viajes y cupos</h1><a class="btn" href="{% url 'operacion:viaje_nuevo' %}">+ Nueva salida</a></div>
+<form class="tarjeta fila mb" method="get">
+  <div><label for="desde">Desde</label><input type="date" id="desde" name="desde" value="{{ desde|date:'Y-m-d' }}"></div>
+  <div><label for="hasta">Hasta</label><input type="date" id="hasta" name="hasta" value="{{ hasta|date:'Y-m-d' }}"></div>
+  <div><label for="estado">Estado</label><select id="estado" name="estado"><option value="">Todos</option>{% for v, l in estados %}<option value="{{ v }}" {% if v == estado %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div style="align-self:flex-end"><button class="btn">Filtrar</button></div>
+</form>
+<div class="tarjeta">{% include "operacion/_tabla_viajes.html" %}</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block titulo %}Validar tiquetes{% endblock %}
+{% block contenido %}
+<div class="fila entre mb">
+  <div><h1 class="m0">Validar tiquetes</h1><div class="texto-2">{{ viaje }} · {{ viaje.lancha.nombre }}</div></div>
+  <div class="kpi"><span id="abordados">{{ abordados }}</span> <span class="kpi-label">a bordo / {{ viaje.cupos_ocupados }}</span></div>
+</div>
+{% if viaje.cancelado %}<div class="mensaje error">Este viaje está cancelado.</div>{% endif %}
+
+<div id="resultado">
+{% if registro %}
+  <div class="resultado {{ registro.resultado }}">
+    <div class="grande">{% if registro.resultado == "ACEPTADO" %}✔ Abordaje autorizado{% else %}✖ Rechazado{% endif %}</div>
+    {% if registro.tiquete %}<div>{{ registro.tiquete.pasajero.nombre }} · {{ registro.tiquete.pasajero.tipo_documento }} {{ registro.tiquete.pasajero.documento_enmascarado }}</div>{% endif %}
+    {% if registro.motivo %}<div>{{ registro.motivo }}</div>{% endif %}
+    <div class="pequeno">{{ registro.codigo_leido }}</div>
+  </div>
+{% endif %}
+</div>
+
+<div class="tarjeta">
+  <div id="lector"></div>
+  <form method="post" id="form-validar" novalidate>{% csrf_token %}
+    <input type="hidden" name="clave" id="clave">
+    <label for="codigo">Código del tiquete</label>
+    <div class="fila">
+      <input type="text" name="codigo" id="codigo" class="codigo-input" placeholder="WM-XXXX-XXXX" autocomplete="off" autocapitalize="characters" autofocus style="flex:1;min-width:200px">
+      <button class="btn btn-verde" type="submit">Validar</button>
+      <button class="btn btn-sec" type="button" id="camara">📷 Escanear QR</button>
+    </div>
+  </form>
+  <div class="fila mt">
+    <button class="btn btn-sec btn-chico" id="guardar">Guardar manifiesto en el dispositivo</button>
+    <span class="pequeno texto-2" id="estado-manifiesto"></span>
+    <a class="btn btn-sec btn-chico" href="{% url 'abordaje:manifiesto' viaje.pk %}">Ver manifiesto</a>
+  </div>
+</div>
+
+<div class="tarjeta mt">
+  <h2>Últimas validaciones</h2>
+  <div class="tabla-wrap"><table>
+    <thead><tr><th>Hora</th><th>Código</th><th>Pasajero</th><th>Resultado</th><th>Usuario</th></tr></thead>
+    <tbody>{% for r in recientes %}
+      <tr><td>{{ r.fecha|time:"H:i:s" }}{% if r.sin_conexion %} <span class="etq aviso">offline</span>{% endif %}</td><td><code>{{ r.codigo_leido }}</code></td>
+        <td>{{ r.tiquete.pasajero.nombre|default:"—" }}</td><td><span class="etq {{ r.resultado }}">{{ r.get_resultado_display }}</span> <span class="pequeno texto-2">{{ r.motivo }}</span></td><td class="pequeno">{{ r.usuario.get_short_name }}</td></tr>
+    {% empty %}<tr><td colspan="5">Sin validaciones.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var viajeId = "{{ viaje.pk }}";
+  var form = document.getElementById("form-validar"), codigo = document.getElementById("codigo");
+  document.getElementById("clave").value = WALMAR.uuid();
+  function estadoManifiesto() {
+    var m = WALMAR.manifiestos()[viajeId];
+    document.getElementById("estado-manifiesto").textContent = m ? "Guardado (" + m.tiquetes.length + " tiquetes, " + new Date(m.generado_en).toLocaleTimeString() + ")" : "No guardado";
+  }
+  function mostrar(r) {
+    var titulo = r.resultado === "PENDIENTE" ? "✔ Autorizado (sin conexión)" : r.resultado === "ACEPTADO" ? "✔ Abordaje autorizado" : "✖ Rechazado";
+    var div = document.createElement("div");
+    div.className = "resultado " + r.resultado;
+    var g = document.createElement("div"); g.className = "grande"; g.textContent = titulo; div.appendChild(g);
+    [r.pasajero, r.documento, r.motivo].forEach(function (t) { if (t) { var d = document.createElement("div"); d.textContent = t; div.appendChild(d); } });
+    var cont = document.getElementById("resultado"); cont.innerHTML = ""; cont.appendChild(div);
+  }
+  form.addEventListener("submit", function (e) {
+    if (navigator.onLine) return;
+    e.preventDefault();  // CU-10: validación contra el manifiesto local
+    mostrar(WALMAR.validarLocal(viajeId, codigo.value));
+    codigo.value = ""; codigo.focus();
+  });
+  document.getElementById("guardar").addEventListener("click", function () {
+    WALMAR.descargarManifiesto(viajeId).then(estadoManifiesto).catch(function () { alert("No se pudo descargar el manifiesto."); });
+  });
+  document.getElementById("camara").addEventListener("click", function () {
+    WALMAR.iniciarLector(document.getElementById("lector"), function (valor) { codigo.value = valor; form.requestSubmit ? form.requestSubmit() : form.submit(); });
+  });
+  // Mantiene una copia local actualizada mientras hay conexión.
+  if (navigator.onLine) WALMAR.descargarManifiesto(viajeId).then(estadoManifiesto).catch(estadoManifiesto); else estadoManifiesto();
+})();
+</script>
+{% endblock %}

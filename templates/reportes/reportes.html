@@ -1,0 +1,39 @@
+{% extends "base.html" %}{% load walmar %}
+{% block titulo %}Reportes{% endblock %}
+{% block contenido %}
+<h1>Reportes básicos</h1>
+<form class="tarjeta fila mb" method="get">
+  <div><label for="desde">Desde</label><input type="date" id="desde" name="desde" value="{{ desde|date:'Y-m-d' }}"></div>
+  <div><label for="hasta">Hasta</label><input type="date" id="hasta" name="hasta" value="{{ hasta|date:'Y-m-d' }}"></div>
+  <div style="align-self:flex-end" class="fila"><button class="btn">Consultar</button><a class="btn btn-sec" href="?desde={{ desde|date:'Y-m-d' }}&hasta={{ hasta|date:'Y-m-d' }}&formato=csv">CSV</a></div>
+</form>
+{% if sin_datos %}
+  <div class="tarjeta centro"><h2>Sin datos en el periodo</h2><p class="texto-2 m0">No hay pagos, abordajes ni solicitudes registrados entre {{ desde|date:"d/m/Y" }} y {{ hasta|date:"d/m/Y" }}.</p></div>
+{% else %}
+<div class="grid grid-4 mb">
+  <div class="tarjeta"><div class="kpi-label">Ventas confirmadas</div><div class="kpi">{{ ventas.total|cop }}</div><div class="pequeno texto-2">{{ ventas.n }} pagos aprobados</div></div>
+  <div class="tarjeta"><div class="kpi-label">Pasajes vendidos</div><div class="kpi">{{ pasajes }}</div></div>
+  <div class="tarjeta"><div class="kpi-label">Abordajes</div><div class="kpi">{{ abordajes.ACEPTADO|default:0 }}</div></div>
+  <div class="tarjeta"><div class="kpi-label">Intentos rechazados</div><div class="kpi">{{ abordajes.RECHAZADO|default:0 }}</div></div>
+</div>
+<div class="grid grid-2">
+  <div class="tarjeta">
+    <h2>Pagos por medio y estado</h2>
+    <div class="tabla-wrap"><table><thead><tr><th>Medio</th><th>Estado</th><th class="num">Cantidad</th><th class="num">Total</th></tr></thead>
+      <tbody>{% for f in por_medio_estado %}<tr><td>{{ f.medio_txt }}</td><td><span class="etq {{ f.estado }}">{{ f.estado_txt }}</span></td><td class="num">{{ f.n }}</td><td class="num">{{ f.total|cop }}</td></tr>{% empty %}<tr><td colspan="4">Sin pagos.</td></tr>{% endfor %}</tbody></table></div>
+  </div>
+  <div class="tarjeta">
+    <h2>Solicitudes de reembolso</h2>
+    <div class="tabla-wrap"><table><thead><tr><th>Estado</th><th class="num">Cantidad</th><th class="num">Valor autorizado</th></tr></thead>
+      <tbody>{% for f in reembolsos %}<tr><td>{{ f.estado_txt }}</td><td class="num">{{ f.n }}</td><td class="num">{{ f.total|cop }}</td></tr>{% empty %}<tr><td colspan="3">Sin solicitudes.</td></tr>{% endfor %}</tbody></table></div>
+  </div>
+</div>
+<div class="tarjeta mt">
+  <h2>Ventas confirmadas por día</h2>
+  <div class="tabla-wrap"><table><tbody>{% for d in por_dia %}
+    <tr><td style="width:110px">{{ d.confirmado_en__date|date:"D d/m" }}</td><td><div class="barra" style="width:{% widthratio d.total max_dia 100 %}%"></div></td><td class="num" style="width:140px">{{ d.total|cop }} · {{ d.n }}</td></tr>
+  {% empty %}<tr><td>Sin ventas confirmadas.</td></tr>{% endfor %}</tbody></table></div>
+</div>
+{% endif %}
+<p class="pequeno texto-2 mt">Los totales corresponden a registros confirmados en el sistema. Los pagos se agrupan por fecha de creación.</p>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% load walmar %}
+{% block titulo %}Mis reservas{% endblock %}
+{% block contenido %}
+<div class="fila entre mb"><h1 class="m0">Mis reservas y compras</h1><a class="btn" href="{% url 'reservas:buscar' %}">Nueva reserva</a></div>
+{% for r in reservas %}
+  <a href="{% url 'reservas:detalle' r.codigo %}" class="tarjeta" style="display:block;text-decoration:none;color:inherit">
+    <div class="fila entre">
+      <div>
+        <strong>{{ r.viaje.origen }} → {{ r.viaje.destino }}</strong> · {{ r.viaje.fecha|date:"d/m/Y" }} {{ r.viaje.hora_vigente|time:"H:i" }}
+        <div class="texto-2 pequeno">Reserva {{ r.codigo }} · {{ r.cantidad }} pasaje{{ r.cantidad|pluralize }} · {{ r.total|cop }}</div>
+      </div>
+      <div class="fila">
+        {% if r.respuesta_cambio == "PENDIENTE" %}<span class="etq aviso">Cambio en su viaje</span>{% endif %}
+        <span class="etq {{ r.estado }}">{{ r.get_estado_display }}</span>
+      </div>
+    </div>
+    {% if r.pendiente %}<div class="pequeno mt" style="color:var(--ambar)">Pague antes de {{ r.expira_en|date:"d/m/Y H:i" }}</div>{% endif %}
+  </a>
+{% empty %}
+  <div class="tarjeta centro"><p>Aún no tiene reservas.</p><a class="btn" href="{% url 'reservas:buscar' %}">Buscar viajes</a></div>
+{% endfor %}
+{% endblock %}

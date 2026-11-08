@@ -1,0 +1,12 @@
+Hola {{ reserva.usuario.nombre }},
+
+Su reserva {{ reserva.codigo }} fue creada:
+  Viaje: {{ reserva.viaje }}
+  Pasajes: {{ reserva.cantidad }}
+  Total: ${{ reserva.total|floatformat:0 }} COP
+  Plazo para pagar: {{ reserva.expira_en|date:"d/m/Y H:i" }}
+
+La reserva no da derecho a abordar hasta que el pago sea confirmado.
+Si no paga dentro del plazo, la reserva se cancelará y los cupos se liberarán.
+
+— WALMAR

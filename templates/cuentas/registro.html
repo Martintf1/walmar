@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block titulo %}Crear cuenta{% endblock %}
+{% block contenido %}
+<div class="tarjeta" style="max-width:640px;margin:0 auto">
+  <h1>Crear cuenta</h1>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% for e in form.non_field_errors %}<div class="mensaje error">{{ e }}</div>{% endfor %}
+    <h2>1. Datos personales</h2>
+    {% include "includes/campo.html" with campo=form.nombre %}
+    <div class="grid grid-2">
+      {% include "includes/campo.html" with campo=form.tipo_documento %}
+      {% include "includes/campo.html" with campo=form.identificacion %}
+    </div>
+    <div class="grid grid-2">
+      {% include "includes/campo.html" with campo=form.telefono %}
+      {% include "includes/campo.html" with campo=form.email %}
+    </div>
+    <h2>2. Términos y tratamiento de datos</h2>
+    <p class="pequeno texto-2">Lea los <a href="{% url 'core:terminos' %}" target="_blank" rel="noopener">términos y condiciones</a> y la <a href="{% url 'core:politica_datos' %}" target="_blank" rel="noopener">política de tratamiento de datos personales</a> (Ley 1581 de 2012).</p>
+    {% include "includes/campo.html" with campo=form.acepta_terminos %}
+    <h2>3. Contraseña</h2>
+    <fieldset id="bloque-clave" style="border:0;padding:0;margin:0">
+      {% include "includes/campo.html" with campo=form.password1 %}
+      {% include "includes/campo.html" with campo=form.password2 %}
+      <p class="pequeno texto-2">Mínimo 8 caracteres; no use solo números ni datos personales.</p>
+    </fieldset>
+    <button class="btn btn-bloque" type="submit">Crear cuenta</button>
+  </form>
+  <p class="centro mt">¿Ya tiene cuenta? <a href="{% url 'cuentas:login' %}">Inicie sesión</a></p>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+// La contraseña solo se habilita después de aceptar los términos (RF-COM-01 CA2).
+(function () {
+  var chk = document.getElementById("id_acepta_terminos"), bloque = document.getElementById("bloque-clave");
+  function act() { bloque.disabled = !chk.checked; bloque.style.opacity = chk.checked ? 1 : .55; }
+  chk.addEventListener("change", act); act();
+})();
+</script>
+{% endblock %}

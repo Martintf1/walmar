@@ -1,0 +1,53 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b4f6c">
+  <meta name="description" content="WALMAR: consulta, reserva y compra de pasajes en lancha entre Buenaventura y Timbiquí.">
+  <title>{% block titulo %}WALMAR{% endblock %} · WALMAR</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="{% static 'img/icono.svg' %}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{% static 'img/icono-192.png' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body{% if user.is_authenticated %} data-autenticado="1" data-rol="{{ user.rol }}"{% endif %}>
+  <header class="cabecera">
+    <div class="contenedor">
+      <a class="marca" href="{% url 'core:inicio' %}">
+        <svg viewBox="0 0 512 512" aria-hidden="true"><path d="M96 300h320l-40 70H150z" fill="#fff"/><path d="M180 300V190h110l50 110z" fill="#01baef"/></svg>
+        WALMAR
+      </a>
+      <button class="menu-btn" id="menu-btn" aria-controls="nav" aria-expanded="false">☰ Menú</button>
+      <nav class="nav" id="nav" aria-label="Principal">
+        {% include "includes/nav.html" %}
+      </nav>
+    </div>
+  </header>
+  <div class="estado-red" role="status">Modo Offline · Sin conexión a internet. Se muestra información guardada en el dispositivo.</div>
+  <div class="pendientes-sync" id="pendientes-sync" role="status"></div>
+  <main>
+    <div class="contenedor">
+      {% if messages %}
+        <ul class="mensajes">
+          {% for m in messages %}<li class="mensaje {{ m.tags }}">{{ m }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+      {% block contenido %}{% endblock %}
+    </div>
+  </main>
+  <footer class="pie">
+    <div class="contenedor fila entre">
+      <span>WALMAR · Transporte de pasajeros en lancha Buenaventura – Timbiquí</span>
+      <span>
+        <a href="{% url 'core:terminos' %}">Términos</a> ·
+        <a href="{% url 'core:politica_datos' %}">Tratamiento de datos</a> ·
+        <a href="{% url 'core:politica_cancelacion' %}">Cancelaciones y devoluciones</a>
+      </span>
+    </div>
+  </footer>
+  <script src="{% static 'js/app.js' %}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

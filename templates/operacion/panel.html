@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% load walmar %}
+{% block titulo %}Panel de operación{% endblock %}
+{% block contenido %}
+<div class="fila entre mb"><h1 class="m0">Panel de operación</h1><a class="btn" href="{% url 'operacion:viaje_nuevo' %}">+ Nueva salida</a></div>
+{% if config_incompleta %}<div class="mensaje warning">La configuración del servicio está incompleta (ruta, puntos de embarque o lanchas). No se mostrarán viajes para la venta hasta completarla.{% if user.rol == Rol.ADMIN %} <a href="{% url 'operacion:configuracion' %}">Ir a configuración</a>{% endif %}</div>{% endif %}
+<div class="grid grid-4 mb">
+  <div class="tarjeta"><div class="kpi-label">Grupo de turno hoy</div><div class="kpi">{{ grupo_hoy|default:"—" }}</div><div class="pequeno texto-2">{{ hoy|date:"l j \d\e F" }}</div></div>
+  <div class="tarjeta"><div class="kpi-label">Ventas aprobadas hoy</div><div class="kpi">{{ ventas_hoy.total|cop }}</div><div class="pequeno texto-2">{{ ventas_hoy.n }} pago{{ ventas_hoy.n|pluralize }}</div></div>
+  <div class="tarjeta"><div class="kpi-label">Reservas pendientes de pago</div><div class="kpi">{{ reservas_pendientes }}</div></div>
+  <div class="tarjeta"><div class="kpi-label">Solicitudes abiertas</div><div class="kpi">{{ solicitudes_abiertas }}</div><a class="pequeno" href="{% url 'reembolsos:bandeja' %}">Gestionar</a></div>
+</div>
+<div class="tarjeta">
+  <h2>Salidas de hoy</h2>
+  {% include "operacion/_tabla_viajes.html" with viajes=viajes_hoy %}
+</div>
+<div class="tarjeta mt">
+  <div class="fila entre"><h2 class="m0">Próximos 7 días</h2><a href="{% url 'operacion:programacion' %}">Ver calendario</a></div>
+  {% include "operacion/_tabla_viajes.html" with viajes=proximos %}
+</div>
+{% endblock %}

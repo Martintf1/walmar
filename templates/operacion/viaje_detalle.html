@@ -1,0 +1,60 @@
+{% extends "base.html" %}{% load walmar %}
+{% block titulo %}Viaje{% endblock %}
+{% block contenido %}
+<div class="fila entre mb">
+  <div><h1 class="m0">{{ viaje.origen }} → {{ viaje.destino }}</h1><div class="texto-2">{{ viaje.fecha|date:"l j \d\e F \d\e Y" }} · {{ viaje.hora_vigente|time:"H:i" }}</div></div>
+  <div class="fila">
+    <a class="btn btn-sec" href="{% url 'abordaje:manifiesto' viaje.pk %}">Manifiesto</a>
+    {% if not viaje.cancelado %}<a class="btn btn-sec" href="{% url 'operacion:viaje_editar' viaje.pk %}">Editar</a>
+    <form method="post" action="{% url 'operacion:viaje_habilitar' viaje.pk %}" class="inline">{% csrf_token %}<button class="btn {% if viaje.habilitado %}btn-sec{% else %}btn-verde{% endif %}">{% if viaje.habilitado %}Suspender venta{% else %}Habilitar venta{% endif %}</button></form>{% endif %}
+  </div>
+</div>
+<div class="grid grid-2">
+  <div class="tarjeta">
+    {% include "includes/viaje_resumen.html" %}
+    <dl class="datos mt">
+      <dt>Grupo</dt><dd>{{ viaje.grupo|default:"—" }}</dd>
+      <dt>Tarifa</dt><dd>{{ viaje.tarifa|cop }}</dd>
+      <dt>Cupos</dt><dd>{{ viaje.cupos_ocupados }} ocupados de {{ viaje.cupos }} (capacidad autorizada {{ viaje.lancha.capacidad_autorizada }})</dd>
+      <dt>Venta</dt><dd>{% if viaje.vendible %}<span class="etq ok">A la venta</span>{% else %}<span class="etq">No disponible</span> <span class="pequeno texto-2">{{ viaje.problemas_para_venta|join:" " }}</span>{% endif %}</dd>
+    </dl>
+  </div>
+  {% if not viaje.cancelado %}
+  <div>
+    <div class="tarjeta">
+      <h2>Ajustar hora efectiva (marea)</h2>
+      <p class="pequeno texto-2">Se mantiene visible la hora programada ({{ viaje.hora_programada|time:"H:i" }}). La nueva hora se refleja en consultas y tiquetes y se notifica a los pasajeros.</p>
+      <form method="post" action="{% url 'operacion:viaje_hora_efectiva' viaje.pk %}" novalidate>{% csrf_token %}{% include "includes/form.html" with form=form_hora %}<button class="btn">Actualizar hora</button></form>
+    </div>
+    <div class="tarjeta">
+      <h2>Reprogramar salida</h2>
+      <form method="post" action="{% url 'operacion:viaje_reprogramar' viaje.pk %}" novalidate data-confirmar="Se reemplazarán los tiquetes y se notificará a los pasajeros. ¿Continuar?">{% csrf_token %}
+        <div class="grid grid-2">{% include "includes/campo.html" with campo=form_reprogramar.fecha %}{% include "includes/campo.html" with campo=form_reprogramar.hora %}</div>
+        {% include "includes/campo.html" with campo=form_reprogramar.motivo %}
+        <button class="btn">Reprogramar</button></form>
+    </div>
+    <div class="tarjeta">
+      <h2>Cancelar salida</h2>
+      <form method="post" action="{% url 'operacion:viaje_cancelar' viaje.pk %}" novalidate>{% csrf_token %}{% include "includes/form.html" with form=form_cancelar %}<button class="btn btn-rojo">Cancelar salida</button></form>
+    </div>
+  </div>
+  {% endif %}
+</div>
+<div class="tarjeta mt">
+  <h2>Reservas ({{ reservas|length }})</h2>
+  <div class="tabla-wrap"><table>
+    <thead><tr><th>Código</th><th>Titular</th><th class="num">Pasajes</th><th class="num">Total</th><th>Estado</th><th>Respuesta al cambio</th><th>Creada</th></tr></thead>
+    <tbody>{% for r in reservas %}<tr><td><code>{{ r.codigo }}</code></td><td>{{ r.usuario.nombre }}</td><td class="num">{{ r.cantidad }}</td><td class="num">{{ r.total|cop }}</td><td><span class="etq {{ r.estado }}">{{ r.get_estado_display }}</span></td><td class="pequeno">{{ r.get_respuesta_cambio_display }}</td><td class="pequeno">{{ r.creada_en|date:"d/m H:i" }}</td></tr>
+    {% empty %}<tr><td colspan="7">Sin reservas.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+<div class="tarjeta mt">
+  <h2>Historial de cambios</h2>
+  <div class="tabla-wrap"><table>
+    <thead><tr><th>Fecha</th><th>Tipo</th><th>Usuario</th><th>Motivo</th><th>Antes</th><th>Después</th></tr></thead>
+    <tbody>{% for c in cambios %}<tr><td class="pequeno">{{ c.fecha|date:"d/m/Y H:i" }}</td><td>{{ c.get_tipo_display }}</td><td class="pequeno">{{ c.usuario.nombre|default:"Sistema" }}</td><td class="pequeno">{{ c.motivo|default:"—" }}</td>
+      <td class="pequeno">{% for k, v in c.datos_anteriores.items %}{{ k }}: {{ v }}<br>{% empty %}—{% endfor %}</td>
+      <td class="pequeno">{% for k, v in c.datos_nuevos.items %}{{ k }}: {{ v }}<br>{% endfor %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}

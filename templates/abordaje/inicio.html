@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block titulo %}Abordaje{% endblock %}
+{% block contenido %}
+<div class="fila entre mb"><h1 class="m0">Control de abordaje</h1><a class="btn btn-sec" href="{% url 'abordaje:sin_conexion' %}">Validar sin conexión</a></div>
+<p class="texto-2">Seleccione la salida. Antes de ir al muelle, descargue el manifiesto reducido para poder validar sin señal.</p>
+{% for v in viajes %}
+  <div class="tarjeta viaje">
+    <div><div class="hora">{{ v.hora_vigente|time:"H:i" }}</div><div class="pequeno texto-2">{{ v.fecha|date:"D d/m" }}</div></div>
+    <div><strong>{{ v.origen }} → {{ v.destino }}</strong><div class="pequeno texto-2">{{ v.lancha.nombre }} · {{ v.cupos_ocupados }} cupos ocupados</div></div>
+    <div><span class="etq {{ v.estado }}">{{ v.get_estado_display }}</span><div class="pequeno" data-estado-manifiesto="{{ v.pk }}"></div></div>
+    <div class="fila">
+      <a class="btn" href="{% url 'abordaje:validar' v.pk %}">Validar</a>
+      <a class="btn btn-sec" href="{% url 'abordaje:manifiesto' v.pk %}">Manifiesto</a>
+      <button class="btn btn-sec" data-descargar="{{ v.pk }}">Guardar offline</button>
+    </div>
+  </div>
+{% empty %}<div class="tarjeta">No hay salidas programadas entre ayer y los próximos dos días.</div>{% endfor %}
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  function pintar() {
+    var m = WALMAR.manifiestos();
+    document.querySelectorAll("[data-estado-manifiesto]").forEach(function (el) {
+      var x = m[el.dataset.estadoManifiesto];
+      el.textContent = x ? "Guardado: " + x.tiquetes.length + " tiquetes · " + new Date(x.generado_en).toLocaleTimeString() : "";
+    });
+  }
+  document.querySelectorAll("[data-descargar]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      b.disabled = true;
+      WALMAR.descargarManifiesto(b.dataset.descargar).then(function () { pintar(); b.disabled = false; })
+        .catch(function () { alert("No se pudo descargar el manifiesto."); b.disabled = false; });
+    });
+  });
+  pintar();
+})();
+</script>
+{% endblock %}

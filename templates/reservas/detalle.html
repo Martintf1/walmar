@@ -1,0 +1,89 @@
+{% extends "base.html" %}{% load walmar %}
+{% block titulo %}Reserva {{ reserva.codigo }}{% endblock %}
+{% block contenido %}
+<div class="fila entre mb">
+  <h1 class="m0">Reserva {{ reserva.codigo }}</h1>
+  <span class="etq {{ reserva.estado }}">{{ reserva.get_estado_display }}</span>
+</div>
+
+{% if reserva.respuesta_cambio == "PENDIENTE" and reserva.usuario == user %}
+  <div class="tarjeta mb" style="border-color:var(--ambar)">
+    <h2>{% if reserva.viaje.cancelado %}El transportador canceló su viaje{% else %}Su viaje fue reprogramado{% endif %}</h2>
+    <p>Elija una opción: {% if not reserva.viaje.cancelado %}aceptar el nuevo horario, {% endif %}cambiar a otra salida o desistir y solicitar la devolución.</p>
+    <div class="fila">
+      {% if not reserva.viaje.cancelado %}
+        <form method="post" action="{% url 'reservas:responder_cambio' reserva.codigo %}" class="inline">{% csrf_token %}<input type="hidden" name="accion" value="aceptar"><button class="btn btn-verde">Acepto el nuevo horario</button></form>
+      {% endif %}
+      <a class="btn btn-sec" href="{% url 'reembolsos:solicitar' reserva.codigo %}">Desistir y solicitar devolución</a>
+    </div>
+    {% if alternativas %}
+      <form method="post" action="{% url 'reservas:responder_cambio' reserva.codigo %}" class="mt">{% csrf_token %}
+        <input type="hidden" name="accion" value="trasladar">
+        <label for="alt">Cambiar a otra salida</label>
+        <div class="fila"><select name="viaje" id="alt" style="max-width:420px">{% for v in alternativas %}<option value="{{ v.pk }}">{{ v.fecha|date:"D d/m/Y" }} {{ v.hora_vigente|time:"H:i" }} · {{ v.cupos_disponibles }} cupos</option>{% endfor %}</select>
+        <button class="btn">Cambiar de salida</button></div>
+      </form>
+    {% endif %}
+  </div>
+{% endif %}
+
+<div class="grid grid-2">
+  <div class="tarjeta">
+    <h2>Viaje</h2>
+    {% include "includes/viaje_resumen.html" with viaje=reserva.viaje %}
+  </div>
+  <div class="tarjeta">
+    <h2>Pago</h2>
+    <dl class="datos mb">
+      <dt>Pasajes</dt><dd>{{ reserva.cantidad }} × {{ reserva.tarifa_unitaria|cop }}</dd>
+      <dt>Total</dt><dd class="kpi">{{ reserva.total|cop }}</dd>
+      <dt>Canal</dt><dd>{{ reserva.get_canal_display }}</dd>
+      {% if reserva.pendiente %}<dt>Pagar antes de</dt><dd>{{ reserva.expira_en|date:"d/m/Y H:i" }}</dd>{% endif %}
+      {% if reserva.motivo_cancelacion %}<dt>Motivo</dt><dd>{{ reserva.motivo_cancelacion }}</dd>{% endif %}
+    </dl>
+    {% if reserva.pendiente and reserva.usuario == user %}
+      <h3>Elija el medio de pago</h3>
+      <div class="grid">
+        <form method="post" action="{% url 'pagos:pagar_en_linea' reserva.codigo %}">{% csrf_token %}
+          <button class="btn btn-verde btn-bloque">Pagar en línea</button></form>
+        <div class="mensaje info m0 pequeno"><strong>Pagar en efectivo:</strong> acérquese al punto de atención autorizado con el código <strong>{{ reserva.codigo }}</strong> antes de {{ reserva.expira_en|date:"d/m/Y H:i" }}.</div>
+        <form method="post" action="{% url 'reservas:cancelar' reserva.codigo %}" data-confirmar="¿Cancelar esta reserva? Los cupos se liberarán.">{% csrf_token %}
+          <button class="btn btn-sec btn-bloque">Cancelar reserva</button></form>
+      </div>
+    {% endif %}
+    {% for p in pagos %}
+      <div class="fila entre pequeno" style="border-top:1px solid var(--borde);padding-top:8px;margin-top:8px">
+        <span>{{ p.get_medio_display }} · {{ p.creado_en|date:"d/m/Y H:i" }}</span>
+        <span><span class="etq {{ p.estado }}">{{ p.get_estado_display }}</span>
+          {% if p.estado == "APROBADO" or p.estado == "REEMBOLSADO" %}<a href="{% url 'pagos:comprobante' p.referencia %}">Comprobante</a>{% endif %}
+          {% if p.estado == "PENDIENTE" %}<a href="{% url 'pagos:estado' p.referencia %}">Ver estado</a>{% endif %}</span>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="tarjeta mt">
+  <div class="fila entre"><h2 class="m0">Pasajeros y tiquetes</h2>
+    {% if reserva.confirmada %}<a class="btn btn-sec btn-chico" href="{% url 'reservas:tiquetes_pdf' reserva.codigo %}">Descargar todos (PDF)</a>{% endif %}</div>
+  <div class="tabla-wrap mt">
+  <table>
+    <thead><tr><th>Pasajero</th><th>Documento</th><th>Tiquete</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+    {% for p in pasajeros %}{% with t=p.tiquete_vigente %}
+      <tr><td>{{ p.nombre }}</td><td>{{ p.get_tipo_documento_display }} {{ p.documento_enmascarado }}</td>
+        <td>{% if t %}<code>{{ t.codigo }}</code>{% else %}<span class="texto-2">Se emite al confirmar el pago</span>{% endif %}</td>
+        <td>{% if t %}<span class="etq {{ t.estado }}">{{ t.get_estado_display }}</span>{% endif %}</td>
+        <td>{% if t and reserva.confirmada %}<a class="btn btn-chico" href="{% url 'reservas:tiquete' t.codigo %}">Ver tiquete</a>{% endif %}</td></tr>
+    {% endwith %}{% endfor %}
+    </tbody>
+  </table></div>
+</div>
+
+<div class="tarjeta mt">
+  <h2>Cancelaciones y devoluciones</h2>
+  {% for s in solicitudes %}
+    <p class="m0"><a href="{% url 'reembolsos:detalle' s.pk %}">Solicitud #{{ s.pk }}</a> · {{ s.get_tipo_display }} · <span class="etq {{ s.estado }}">{{ s.get_estado_display }}</span></p>
+  {% empty %}<p class="texto-2">No hay solicitudes para esta reserva.</p>{% endfor %}
+  {% if puede_solicitar and reserva.usuario == user %}<a class="btn btn-sec mt" href="{% url 'reembolsos:solicitar' reserva.codigo %}">Solicitar cancelación o devolución</a>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% load walmar %}
+{% block titulo %}Pasarela de pagos{% endblock %}
+{% block contenido %}
+<div class="tarjeta" style="max-width:480px;margin:0 auto">
+  <p class="mensaje warning pequeno">Pasarela <strong>simulada</strong> para pruebas. El proveedor real de pagos está pendiente de definir; en producción esta pantalla la presenta la pasarela.</p>
+  <h1>Pago en línea</h1>
+  <dl class="datos mb">
+    <dt>Comercio</dt><dd>WALMAR</dd>
+    <dt>Referencia</dt><dd>{{ pago.referencia }}</dd>
+    <dt>Reserva</dt><dd>{{ pago.reserva.codigo }}</dd>
+    <dt>Total a pagar</dt><dd class="kpi">{{ pago.valor|cop }}</dd>
+  </dl>
+  <form method="post">{% csrf_token %}
+    <div class="grid">
+      <button class="btn btn-verde" name="resultado" value="APROBADO">Simular pago aprobado</button>
+      <button class="btn btn-rojo" name="resultado" value="RECHAZADO">Simular pago rechazado</button>
+      <button class="btn btn-sec" name="resultado" value="PENDIENTE">Simular pago pendiente</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

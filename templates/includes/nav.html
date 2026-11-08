@@ -1,0 +1,33 @@
+{% if user.is_authenticated %}
+  {% if user.rol == Rol.PASAJERO %}
+    <a href="{% url 'reservas:buscar' %}">Buscar viajes</a>
+    <a href="{% url 'reservas:mis_reservas' %}">Mis reservas</a>
+    <a href="{% url 'reembolsos:mis_solicitudes' %}">Mis solicitudes</a>
+  {% endif %}
+  {% if user.rol == Rol.VENTAS %}
+    <a href="{% url 'pagos:taquilla' %}">Taquilla</a>
+    <a href="{% url 'reservas:buscar' %}">Vender pasaje</a>
+  {% endif %}
+  {% if user.rol == Rol.ABORDAJE %}
+    <a href="{% url 'abordaje:inicio' %}">Abordaje</a>
+    <a href="{% url 'abordaje:sin_conexion' %}">Validar sin conexión</a>
+  {% endif %}
+  {% if Rol.OPERADOR in user.roles_efectivos %}
+    <a href="{% url 'operacion:panel' %}">Panel</a>
+    <a href="{% url 'operacion:viajes' %}">Viajes</a>
+    <a href="{% url 'operacion:programacion' %}">Programación</a>
+    <a href="{% url 'reembolsos:bandeja' %}">Solicitudes</a>
+    <a href="{% url 'reportes:reportes' %}">Reportes</a>
+  {% endif %}
+  {% if user.rol == Rol.ADMIN %}
+    <a href="{% url 'operacion:configuracion' %}">Configuración</a>
+    <a href="{% url 'cuentas:personal_lista' %}">Usuarios</a>
+  {% endif %}
+  <span class="rol">{{ user.get_short_name }} · {{ user.get_rol_display }}</span>
+  <a href="{% url 'cuentas:perfil' %}">Mi cuenta</a>
+  <form method="post" action="{% url 'cuentas:logout' %}" class="inline" data-salir>{% csrf_token %}<button class="enlace" type="submit">Salir</button></form>
+{% else %}
+  <a href="{% url 'reservas:buscar' %}">Buscar viajes</a>
+  <a href="{% url 'cuentas:login' %}">Iniciar sesión</a>
+  <a href="{% url 'cuentas:registro' %}">Crear cuenta</a>
+{% endif %}

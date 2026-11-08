@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block titulo %}Configuración del servicio{% endblock %}
+{% block contenido %}
+<h1>Configuración del servicio</h1>
+<p class="texto-2">Cree la ruta, los puntos de embarque y desembarque, los grupos de propietarios, las lanchas con su capacidad autorizada y los horarios base. Los viajes no se muestran a la venta hasta estar configurados y habilitados.</p>
+<div class="grid grid-3">
+  {% for clave, titulo, n in resumen %}
+    <a class="tarjeta" style="text-decoration:none;color:inherit" href="{% url 'operacion:config_lista' clave %}"><div class="kpi">{{ n }}</div><div>{{ titulo }}</div></a>
+  {% endfor %}
+</div>
+<div class="tarjeta mt"><h2>Otras opciones</h2>
+  <div class="fila"><a class="btn btn-sec" href="{% url 'cuentas:personal_lista' %}">Usuarios del sistema</a><a class="btn btn-sec" href="{% url 'reportes:auditoria' %}">Registro de auditoría</a><a class="btn btn-sec" href="{% url 'operacion:programacion' %}">Programación</a></div>
+</div>
+{% endblock %}

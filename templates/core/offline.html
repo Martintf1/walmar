@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block titulo %}Sin conexión{% endblock %}
+{% block contenido %}
+<div class="tarjeta">
+  <h1>Sin conexión a internet</h1>
+  <p>Esta página no está guardada en el dispositivo. Puede consultar la información almacenada localmente:</p>
+  <div id="local"></div>
+  <p class="texto-2 pequeno">Las compras, los pagos y la confirmación de cupos requieren conexión: se confirman solo cuando el servidor las valida.</p>
+  <div class="fila"><a class="btn" href="/abordaje/sin-conexion/">Validación de abordaje sin conexión</a><a class="btn btn-sec" href="/">Reintentar</a></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var t = WALMAR.leer(WALMAR.claves.tiquetes, null);
+  var c = WALMAR.leer(WALMAR.claves.consultas, []);
+  var html = "";
+  if (t && t.tiquetes && t.tiquetes.length) {
+    html += "<h2>Mis tiquetes guardados</h2><ul>";
+    t.tiquetes.forEach(function (x) { html += "<li><strong>" + x.codigo + "</strong> · " + x.pasajero + " · " + x.viaje + " · " + x.estado + "</li>"; });
+    html += "</ul><p class='pequeno texto-2'>Actualizado: " + new Date(t.consultado_en).toLocaleString() + "</p>";
+  }
+  if (c.length) {
+    html += "<h2>Últimas consultas de viajes</h2>";
+    c.forEach(function (q) {
+      html += "<p class='pequeno texto-2'>" + new Date(q.datos.consultado_en).toLocaleString() + " (información guardada, puede haber cambiado)</p><ul>";
+      q.datos.viajes.forEach(function (v) { html += "<li>" + v.origen + " → " + v.destino + " " + v.fecha + " " + v.hora + " · $" + v.tarifa.toLocaleString("es-CO") + " · " + v.cupos_disponibles + " cupos</li>"; });
+      html += "</ul>";
+    });
+  }
+  document.getElementById("local").innerHTML = html || "<p class='texto-2'>No hay información guardada en este dispositivo.</p>";
+})();
+</script>
+{% endblock %}

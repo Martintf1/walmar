@@ -1,0 +1,10 @@
+Hola {{ reserva.usuario.nombre }},
+
+¡Su compra fue confirmada! Reserva {{ reserva.codigo }}
+  Viaje: {{ reserva.viaje }}
+  Pasajes: {{ reserva.cantidad }}
+
+Sus tiquetes con código QR están disponibles en "Mis reservas".
+Preséntese en el muelle con su documento antes de la hora de zarpe.
+
+— WALMAR

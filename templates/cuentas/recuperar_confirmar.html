@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block titulo %}Nueva contraseña{% endblock %}
+{% block contenido %}
+<div class="tarjeta" style="max-width:440px;margin:0 auto">
+  <h1>Definir nueva contraseña</h1>
+  <p class="texto-2">Ingrese el código recibido en su correo. El código es de un solo uso y vence en pocos minutos.</p>
+  <form method="post" novalidate>{% csrf_token %}{% include "includes/form.html" %}
+    <button class="btn btn-bloque" type="submit">Guardar contraseña</button></form>
+  <p class="centro mt"><a href="{% url 'cuentas:recuperar' %}">Solicitar un código nuevo</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block titulo %}Programación de turnos{% endblock %}
+{% block contenido %}
+<h1>Programación de turnos y salidas</h1>
+<div class="tarjeta mb">
+  <div class="fila entre mb">
+    <a class="btn btn-sec btn-chico" href="?anio={{ anterior.year }}&mes={{ anterior.month }}">‹ Anterior</a>
+    <h2 class="m0">{{ primero|date:"F Y"|capfirst }}</h2>
+    <a class="btn btn-sec btn-chico" href="?anio={{ siguiente.year }}&mes={{ siguiente.month }}">Siguiente ›</a>
+  </div>
+  <div class="calendario">
+    {% for d in dias %}<div class="cab">{{ d }}</div>{% endfor %}
+    {% now "Y-m-d" as hoy %}
+    {% for semana in semanas %}{% for d in semana %}
+      <div class="dia{% if not d.del_mes %} fuera{% endif %}{% if d.fecha|date:'Y-m-d' == hoy %} hoy{% endif %}">
+        <div class="num">{{ d.fecha.day }}</div>
+        {% if d.grupo %}<span class="grupo{% if d.explicito %} explicito{% endif %}" title="{% if d.explicito %}Asignado manualmente{% else %}Rotación automática{% endif %}">{{ d.grupo }}</span>{% endif %}
+        {% for v in d.viajes %}<a class="v {{ v.estado }}" href="{% url 'operacion:viaje_detalle' v.pk %}">{{ v.hora_vigente|time:"H:i" }} {% if v.sentido == "IDA" %}→{% else %}←{% endif %} {{ v.lancha.nombre }}</a>{% endfor %}
+      </div>
+    {% endfor %}{% endfor %}
+  </div>
+  <p class="pequeno texto-2 mt m0">→ ida (Buenaventura → Timbiquí), ← regreso. Grupo en azul oscuro: asignado manualmente; en azul claro: rotación diaria automática.</p>
+</div>
+<div class="grid grid-2">
+  <div class="tarjeta">
+    <h2>Asignar grupo a una fecha</h2>
+    <form method="post" action="{% url 'operacion:asignar_grupo' %}" novalidate>{% csrf_token %}{% include "includes/form.html" with form=form_asignar %}<button class="btn">Asignar</button></form>
+  </div>
+  <div class="tarjeta">
+    <h2>Programar salidas automáticamente</h2>
+    <p class="pequeno texto-2">Crea las salidas de cada día según los horarios base, con las lanchas del grupo de turno y su capacidad autorizada.</p>
+    <form method="post" action="{% url 'operacion:generar' %}" novalidate>{% csrf_token %}
+      <div class="grid grid-2">{% include "includes/campo.html" with campo=form_generar.desde %}{% include "includes/campo.html" with campo=form_generar.hasta %}</div>
+      {% include "includes/campo.html" with campo=form_generar.habilitar %}
+      <button class="btn">Programar salidas</button></form>
+  </div>
+</div>
+<div class="tarjeta mt">
+  <h2>Grupos y lanchas</h2>
+  <div class="grid grid-3">{% for g in grupos %}<div><strong>{{ g.nombre }}</strong>{% if not g.activo %} <span class="etq">Inactivo</span>{% endif %}<ul class="pequeno">{% for l in g.lanchas.all %}<li>{{ l.nombre }} · {{ l.matricula }} · {{ l.capacidad_autorizada }} pax · {{ l.get_estado_display }}</li>{% empty %}<li>Sin lanchas</li>{% endfor %}</ul></div>{% endfor %}</div>
+</div>
+{% endblock %}

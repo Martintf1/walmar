@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% load walmar %}
+{% block titulo %}Tiquete {{ t.codigo }}{% endblock %}
+{% block contenido %}
+<div class="tiquete">
+  <div class="top">
+    <div class="fila entre"><strong>WALMAR · Tiquete</strong><span class="etq {{ t.estado }}">{{ t.get_estado_display }}</span></div>
+    <div style="font-size:1.4rem;font-weight:800;margin-top:6px">{{ t.viaje.origen }} → {{ t.viaje.destino }}</div>
+  </div>
+  <div class="cuerpo">
+    {% if t.estado == "ANULADO" %}<div class="mensaje error">Este tiquete fue anulado{% if t.motivo_anulacion %}: {{ t.motivo_anulacion }}{% endif %}.</div>{% endif %}
+    <div class="qr">{{ qr|safe }}</div>
+    <div class="codigo">{{ t.codigo }}</div>
+    <dl class="datos mt">
+      <dt>Pasajero</dt><dd>{{ t.pasajero.nombre }}</dd>
+      <dt>Documento</dt><dd>{{ t.pasajero.tipo_documento }} {{ t.pasajero.documento_enmascarado }}</dd>
+      <dt>Fecha</dt><dd>{{ t.viaje.fecha|date:"l j \d\e F \d\e Y" }}</dd>
+      <dt>Hora de zarpe</dt><dd>{{ t.viaje.hora_vigente|time:"H:i" }}{% if t.viaje.hora_cambiada %} <span class="etq aviso">Ajustada por marea</span>{% endif %}</dd>
+      <dt>Embarque</dt><dd>{{ t.viaje.punto_embarque }}</dd>
+      <dt>Lancha</dt><dd>{{ t.viaje.lancha.nombre }} ({{ t.viaje.lancha.matricula }})</dd>
+      <dt>Reserva</dt><dd>{{ t.reserva.codigo }}</dd>
+      <dt>Valor</dt><dd>{{ t.reserva.tarifa_unitaria|cop }}</dd>
+    </dl>
+    <div class="fila mt no-imprimir">
+      {% if t.estado != "ANULADO" %}<a class="btn" href="{% url 'reservas:tiquete_pdf' t.codigo %}">Descargar PDF</a>{% endif %}
+      <a class="btn btn-sec" href="{% url 'reservas:detalle' t.reserva.codigo %}">Volver a la reserva</a>
+    </div>
+    <p class="pequeno texto-2 mt m0">Esta página queda guardada en su dispositivo para mostrarla sin conexión. Tiquete personal e intransferible, válido para un solo abordaje.</p>
+  </div>
+</div>
+{% endblock %}

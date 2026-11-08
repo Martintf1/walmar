@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block titulo %}Inicio{% endblock %}
+{% block contenido %}
+<section class="hero">
+  <h1>Pasajes en lancha Buenaventura ⇄ Timbiquí</h1>
+  <p>Consulte horarios, tarifas y cupos disponibles, reserve y pague en línea o en el punto de atención, y descargue su tiquete con código QR.</p>
+  <div class="fila mt">
+    <a class="btn btn-verde" href="{% url 'reservas:buscar' %}">Buscar viajes</a>
+    {% if not user.is_authenticated %}<a class="btn btn-sec" href="{% url 'cuentas:registro' %}">Crear cuenta</a>{% endif %}
+  </div>
+</section>
+<div class="grid grid-3">
+  <div class="tarjeta"><h3>1. Consulte</h3><p class="texto-2 m0">Busque por origen, destino y fecha. Verá la hora de zarpe, la tarifa, la duración y los cupos disponibles.</p></div>
+  <div class="tarjeta"><h3>2. Reserve y pague</h3><p class="texto-2 m0">Registre a los pasajeros: los cupos quedan apartados mientras paga en línea o en efectivo en el punto de atención.</p></div>
+  <div class="tarjeta"><h3>3. Aborde</h3><p class="texto-2 m0">Presente su tiquete digital con QR y su documento en el muelle. El tiquete se puede consultar sin conexión.</p></div>
+</div>
+{% if puntos %}
+<div class="tarjeta mt">
+  <h2>Puntos de embarque</h2>
+  <ul class="m0">{% for p in puntos %}<li><strong>{{ p.nombre }}</strong> — {{ p.ciudad }}{% if p.direccion %} · <span class="texto-2">{{ p.direccion }}</span>{% endif %}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+<p class="texto-2 pequeno mt">WALMAR es una herramienta tecnológica de apoyo a la venta de pasajes; no reemplaza los permisos, habilitaciones ni el zarpe expedidos por la DIMAR y la Capitanía de Puerto.</p>
+{% endblock %}

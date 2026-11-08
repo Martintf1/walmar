@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block titulo %}Error 403{% endblock %}
+{% block contenido %}
+<div class="tarjeta centro">
+  <h1>{% if "403" == "403" %}Acceso no autorizado{% else %}Página no encontrada{% endif %}</h1>
+  <p class="texto-2">{% if "403" == "403" %}Su perfil no tiene permisos para acceder a esta sección.{% else %}La dirección no existe o no tiene acceso a ella.{% endif %}</p>
+  <a class="btn" href="{% url 'core:inicio' %}">Ir al inicio</a>
+</div>
+{% endblock %}

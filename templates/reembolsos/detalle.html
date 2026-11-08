@@ -1,0 +1,35 @@
+{% extends "base.html" %}{% load walmar %}
+{% block titulo %}Solicitud #{{ s.pk }}{% endblock %}
+{% block contenido %}
+<div class="fila entre mb"><h1 class="m0">Solicitud #{{ s.pk }}</h1><span class="etq {{ s.estado }}">{{ s.get_estado_display }}</span></div>
+<div class="grid grid-2">
+  <div class="tarjeta">
+    <dl class="datos">
+      <dt>Reserva</dt><dd>{% if s.solicitante == user %}<a href="{% url 'reservas:detalle' s.reserva.codigo %}">{{ s.reserva.codigo }}</a>{% else %}{{ s.reserva.codigo }}{% endif %}</dd>
+      <dt>Viaje</dt><dd>{{ s.reserva.viaje }}{% if s.reserva.viaje.cancelado %} <span class="etq CANCELADO">Cancelado</span>{% endif %}</dd>
+      <dt>Solicitante</dt><dd>{{ s.solicitante.nombre }}</dd>
+      <dt>Tipo</dt><dd>{{ s.get_tipo_display }}</dd>
+      <dt>Fecha del aviso</dt><dd>{{ s.fecha_solicitud|date:"d/m/Y H:i" }} (zarpe: {{ s.reserva.viaje.zarpe|date:"d/m/Y H:i" }})</dd>
+      <dt>Motivo</dt><dd>{{ s.motivo|linebreaksbr }}</dd>
+      <dt>Soporte</dt><dd>{% if s.soporte %}<a href="{% url 'reembolsos:soporte' s.pk %}">Descargar</a>{% else %}—{% endif %}</dd>
+      <dt>Valor pagado</dt><dd>{{ s.valor_pagado|cop }} · {{ s.medio_devolucion|default:"—" }}</dd>
+      <dt>Valor autorizado</dt><dd>{{ s.valor_autorizado|cop }}</dd>
+      {% if s.justificacion %}<dt>Justificación</dt><dd>{{ s.justificacion|linebreaksbr }}</dd>{% endif %}
+      {% if s.referencia_devolucion %}<dt>Ref. devolución</dt><dd>{{ s.referencia_devolucion }}</dd>{% endif %}
+    </dl>
+  </div>
+  <div>
+    {% if form %}
+    <div class="tarjeta">
+      <h2>Resolver solicitud</h2>
+      <p class="pequeno texto-2">El sistema no aplica porcentajes por defecto. Registre el valor autorizado según la política aprobada, la causa, el aviso previo y la norma aplicable (C. Co. arts. 1002, 1588–1594). Al aprobar, la reserva se cancela y los cupos se liberan.</p>
+      <form method="post" novalidate>{% csrf_token %}{% include "includes/form.html" %}<button class="btn">Guardar decisión</button></form>
+    </div>
+    {% endif %}
+    <div class="tarjeta">
+      <h2>Seguimiento</h2>
+      <ul class="pequeno">{% for h in historial %}<li><strong>{{ h.get_estado_display }}</strong> · {{ h.fecha|date:"d/m/Y H:i" }}{% if h.nota %} — {{ h.nota }}{% endif %}</li>{% endfor %}</ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

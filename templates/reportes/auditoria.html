@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block titulo %}Auditoría{% endblock %}
+{% block contenido %}
+<h1>Registro de auditoría</h1>
+<form class="fila mb" method="get"><select name="accion" style="max-width:300px" onchange="this.form.submit()"><option value="">Todas las acciones</option>{% for a in acciones %}<option {% if a == accion %}selected{% endif %}>{{ a }}</option>{% endfor %}</select></form>
+<div class="tarjeta tabla-wrap"><table>
+  <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Objeto</th><th>Resultado</th><th>Detalle</th></tr></thead>
+  <tbody>{% for r in registros %}<tr><td class="pequeno">{{ r.fecha|date:"d/m/Y H:i:s" }}</td><td class="pequeno">{{ r.usuario.email|default:"Sistema" }}</td><td>{{ r.accion }}</td><td><code>{{ r.objeto }}</code></td><td>{{ r.resultado }}</td><td class="pequeno"><code>{{ r.detalle }}</code></td></tr>
+  {% empty %}<tr><td colspan="6">Sin registros.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

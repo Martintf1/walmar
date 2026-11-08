@@ -1,0 +1,105 @@
+{% extends "base.html" %}{% load walmar %}
+{% block titulo %}Reservar{% endblock %}
+{% block contenido %}
+<div class="pasos"><span>1. Buscar</span> › <span class="activo">2. Pasajeros</span> › <span>3. Pago</span> › <span>4. Tiquetes</span></div>
+<h1>Reservar pasajes</h1>
+<div class="grid grid-2">
+  <div>
+    {% if problemas %}
+      <div class="mensaje error">{{ problemas.0 }}</div>
+    {% endif %}
+    <form method="post" id="form-reserva" novalidate>
+      {% csrf_token %}
+      {{ formset.management_form }}
+      {% for e in formset.non_form_errors %}<div class="mensaje error">{{ e }}</div>{% endfor %}
+      <div id="pasajeros">
+        {% for f in formset %}
+          <div class="pasajero-bloque">
+            <div class="fila entre"><h3 class="m0">Pasajero <span class="n">{{ forloop.counter }}</span></h3><button type="button" class="btn btn-sec btn-chico quitar">Quitar</button></div>
+            {% include "includes/form.html" with form=f %}
+          </div>
+        {% endfor %}
+      </div>
+      <template id="plantilla-pasajero">
+        <div class="pasajero-bloque">
+          <div class="fila entre"><h3 class="m0">Pasajero <span class="n"></span></h3><button type="button" class="btn btn-sec btn-chico quitar">Quitar</button></div>
+          {% include "includes/form.html" with form=formset.empty_form %}
+        </div>
+      </template>
+      <button type="button" class="btn btn-sec mb" id="agregar">+ Agregar pasajero</button>
+
+      <div class="tarjeta">
+        <p class="pequeno">Lea la <a href="{% url 'core:politica_cancelacion' %}" target="_blank" rel="noopener">política de cancelación, reprogramación y devolución</a> antes de continuar.</p>
+        {% include "includes/form.html" with form=confirmar %}
+        <button class="btn btn-verde btn-bloque" type="submit" {% if problemas %}disabled{% endif %}>Reservar y continuar al pago</button>
+        <p class="pequeno texto-2 mt m0">Los cupos quedarán apartados temporalmente mientras realiza el pago.</p>
+      </div>
+    </form>
+  </div>
+  <aside>
+    <div class="tarjeta">
+      <h2>Resumen</h2>
+      {% include "includes/viaje_resumen.html" %}
+      <hr style="border:0;border-top:1px solid var(--borde);margin:14px 0">
+      <dl class="datos">
+        <dt>Tarifa por pasajero</dt><dd>{{ viaje.tarifa|cop }}</dd>
+        <dt>Pasajeros</dt><dd id="r-cant">1</dd>
+        <dt>Total</dt><dd class="kpi" id="r-total">{{ viaje.tarifa|cop }}</dd>
+        <dt>Cupos disponibles</dt><dd>{{ viaje.cupos_disponibles }}</dd>
+      </dl>
+    </div>
+  </aside>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var tarifa = {{ viaje.tarifa|floatformat:0 }}, maxCupos = {{ viaje.cupos_disponibles }};
+  var cont = document.getElementById("pasajeros"), total = document.getElementById("id_p-TOTAL_FORMS");
+  var maxForms = Math.min(Number(document.getElementById("id_p-MAX_NUM_FORMS").value), maxCupos);
+  var tpl = document.getElementById("plantilla-pasajero").innerHTML;
+  function renumerar() {
+    var bloques = cont.querySelectorAll(".pasajero-bloque");
+    bloques.forEach(function (b, i) {
+      b.querySelector(".n").textContent = i + 1;
+      b.querySelectorAll("input,select,textarea,label").forEach(function (el) {
+        ["name", "id", "for"].forEach(function (a) {
+          var v = el.getAttribute(a);
+          if (v) el.setAttribute(a, v.replace(/p-(\d+|__prefix__)-/, "p-" + i + "-"));
+        });
+      });
+      b.querySelector(".quitar").style.visibility = bloques.length > 1 ? "visible" : "hidden";
+    });
+    total.value = bloques.length;
+    document.getElementById("r-cant").textContent = bloques.length;
+    document.getElementById("r-total").textContent = "$" + (tarifa * bloques.length).toLocaleString("es-CO");
+    document.getElementById("agregar").disabled = bloques.length >= maxForms;
+  }
+  document.getElementById("agregar").addEventListener("click", function () {
+    if (cont.children.length >= maxForms) return;
+    cont.insertAdjacentHTML("beforeend", tpl);
+    renumerar();
+  });
+  cont.addEventListener("click", function (e) {
+    if (e.target.classList.contains("quitar") && cont.children.length > 1) { e.target.closest(".pasajero-bloque").remove(); renumerar(); }
+  });
+  renumerar();
+
+  // Sin conexión: la reserva se guarda como pendiente y se envía al recuperar la señal (CU-19).
+  document.getElementById("form-reserva").addEventListener("submit", function (e) {
+    if (navigator.onLine) return;
+    e.preventDefault();
+    var pasajeros = [];
+    cont.querySelectorAll(".pasajero-bloque").forEach(function (b, i) {
+      var g = function (k) { var el = b.querySelector("[name='p-" + i + "-" + k + "']"); return el ? el.value : ""; };
+      pasajeros.push({ nombre: g("nombre"), tipo_documento: g("tipo_documento"), documento: g("documento"), telefono: g("telefono") });
+    });
+    WALMAR.cola.agregar({
+      tipo: "reserva", clave: document.getElementById("id_clave_idempotencia").value || WALMAR.uuid(),
+      viaje: {{ viaje.pk }}, pasajeros: pasajeros, acepta_politica: document.getElementById("id_acepta_politica").checked,
+    });
+    alert("Sin conexión: su solicitud quedó guardada como PENDIENTE en este dispositivo. No es una compra confirmada: se enviará al servidor cuando vuelva la conexión y se validarán los cupos.");
+  });
+})();
+</script>
+{% endblock %}

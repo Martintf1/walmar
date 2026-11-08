@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block titulo %}Recuperar contraseña{% endblock %}
+{% block contenido %}
+<div class="tarjeta" style="max-width:440px;margin:0 auto">
+  <h1>Recuperar contraseña</h1>
+  <p class="texto-2">Le enviaremos un código de 6 dígitos a su correo registrado.</p>
+  <form method="post" novalidate>{% csrf_token %}{% include "includes/form.html" %}
+    <button class="btn btn-bloque" type="submit">Enviar código</button></form>
+  <p class="centro mt"><a href="{% url 'cuentas:recuperar_confirmar' %}">Ya tengo un código</a></p>
+</div>
+{% endblock %}

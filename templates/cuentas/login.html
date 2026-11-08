@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titulo %}Iniciar sesión{% endblock %}
+{% block contenido %}
+<div class="tarjeta" style="max-width:440px;margin:0 auto">
+  <h1>Iniciar sesión</h1>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    {% include "includes/form.html" %}
+    <button class="btn btn-bloque" type="submit">Ingresar</button>
+  </form>
+  <p class="centro mt"><a href="{% url 'cuentas:recuperar' %}">¿Olvidó su contraseña?</a></p>
+  <p class="centro">¿No tiene cuenta? <a href="{% url 'cuentas:registro' %}">Regístrese</a></p>
+</div>
+{% endblock %}

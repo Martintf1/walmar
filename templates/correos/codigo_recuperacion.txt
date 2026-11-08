@@ -1,0 +1,8 @@
+Hola {{ usuario.nombre }},
+
+Su código para recuperar la contraseña de WALMAR es: {{ codigo }}
+
+El código vence en {{ minutos }} minutos y solo puede usarse una vez.
+Si no solicitó este código, ignore este mensaje.
+
+— WALMAR

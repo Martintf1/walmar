@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% load walmar %}
+{% block titulo %}Comprobante {{ pago.referencia }}{% endblock %}
+{% block contenido %}
+<div class="tarjeta" style="max-width:640px;margin:0 auto">
+  <div class="fila entre"><h1 class="m0">Comprobante de pago</h1><span class="etq {{ pago.estado }}">{{ pago.get_estado_display }}</span></div>
+  <dl class="datos mt">
+    <dt>Comprobante</dt><dd>{{ pago.referencia }}</dd>
+    <dt>Reserva</dt><dd>{{ pago.reserva.codigo }}</dd>
+    <dt>Medio</dt><dd>{{ pago.get_medio_display }}</dd>
+    <dt>Fecha y hora</dt><dd>{{ pago.confirmado_en|default:pago.creado_en|date:"d/m/Y H:i" }}</dd>
+    <dt>Viaje</dt><dd>{{ pago.reserva.viaje }}</dd>
+    <dt>Pasajes</dt><dd>{{ pago.reserva.cantidad }}</dd>
+    <dt>Valor total</dt><dd class="kpi">{{ pago.valor|cop }}</dd>
+    {% if pago.valor_recibido is not None %}<dt>Valor recibido</dt><dd>{{ pago.valor_recibido|cop }}</dd><dt>Cambio</dt><dd>{{ pago.cambio|cop }}</dd>{% endif %}
+    {% if pago.referencia_externa %}<dt>Ref. pasarela</dt><dd>{{ pago.referencia_externa }}</dd>{% endif %}
+    {% if pago.registrado_por %}<dt>Registrado por</dt><dd>{{ pago.registrado_por.nombre }}</dd>{% endif %}
+  </dl>
+  <h3 class="mt">Pasajeros</h3>
+  <ul>{% for p in pago.reserva.pasajeros.all %}<li>{{ p.nombre }} — {{ p.tipo_documento }} {{ p.documento_enmascarado }}{% with t=p.tiquete_vigente %}{% if t %} · <code>{{ t.codigo }}</code>{% endif %}{% endwith %}</li>{% endfor %}</ul>
+  <div class="fila no-imprimir">
+    <button class="btn" onclick="window.print()">Imprimir</button>
+    <a class="btn btn-sec" href="{% url 'pagos:comprobante_pdf' pago.referencia %}">Descargar PDF</a>
+    {% if Rol.VENTAS in user.roles_efectivos %}<a class="btn btn-sec" href="{% url 'reservas:tiquetes_pdf' pago.reserva.codigo %}">Tiquetes (PDF)</a><a class="btn btn-sec" href="{% url 'pagos:taquilla' %}">Volver a taquilla</a>
+    {% else %}<a class="btn btn-sec" href="{% url 'reservas:detalle' pago.reserva.codigo %}">Ver reserva</a>{% endif %}
+  </div>
+</div>
+{% endblock %}

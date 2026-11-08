@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block titulo %}Crear usuario{% endblock %}
+{% block contenido %}
+<div class="tarjeta" style="max-width:640px;margin:0 auto">
+  <h1>Crear usuario del sistema</h1>
+  <p class="texto-2">Se enviará un correo con un código para que la persona defina su contraseña.</p>
+  <form method="post" novalidate>{% csrf_token %}{% include "includes/form.html" %}
+    <div class="fila"><button class="btn" type="submit">Crear cuenta</button><a class="btn btn-sec" href="{% url 'cuentas:personal_lista' %}">Cancelar</a></div></form>
+</div>
+{% endblock %}

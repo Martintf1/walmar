@@ -1,0 +1,8 @@
+Hola {{ pago.reserva.usuario.nombre }},
+
+Estado de su pago {{ pago.referencia }}: {{ pago.get_estado_display }}
+  Reserva: {{ pago.reserva.codigo }}
+  Medio: {{ pago.get_medio_display }}
+  Valor: ${{ pago.valor|floatformat:0 }} COP
+
+— WALMAR

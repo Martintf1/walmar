@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block titulo %}Validar sin conexión{% endblock %}
+{% block contenido %}
+<h1>Validación sin conexión</h1>
+<p class="texto-2">Valida contra el manifiesto reducido guardado en este dispositivo. Los abordajes quedan como <strong>pendientes de sincronización</strong> y se envían al servidor al recuperar la conexión, sin duplicados.</p>
+<div class="tarjeta">
+  <label for="viaje">Salida (manifiestos guardados)</label>
+  <select id="viaje"></select>
+  <div id="lector" class="mt"></div>
+  <form id="form" class="mt" novalidate>
+    <label for="codigo">Código del tiquete</label>
+    <div class="fila">
+      <input type="text" id="codigo" class="codigo-input" placeholder="WM-XXXX-XXXX" autocomplete="off" style="flex:1;min-width:200px">
+      <button class="btn btn-verde" type="submit">Validar</button>
+      <button class="btn btn-sec" type="button" id="camara">📷 Escanear QR</button>
+    </div>
+  </form>
+</div>
+<div id="resultado" class="mt"></div>
+<div class="grid grid-2 mt">
+  <div class="tarjeta"><div class="fila entre"><h2 class="m0">Pendientes</h2><button class="btn btn-chico" id="sync">Sincronizar ahora</button></div><ul id="pendientes" class="pequeno"></ul></div>
+  <div class="tarjeta"><h2>Resultado de la última sincronización</h2><ul id="sincronizados" class="pequeno"></ul></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var sel = document.getElementById("viaje"), codigo = document.getElementById("codigo");
+  function cargar() {
+    var m = WALMAR.manifiestos(), ids = Object.keys(m);
+    sel.innerHTML = ids.length ? "" : "<option value=''>No hay manifiestos guardados en este dispositivo</option>";
+    ids.forEach(function (id) { var o = document.createElement("option"); o.value = id; o.textContent = m[id].viaje.descripcion + " (" + m[id].tiquetes.length + " tiquetes)"; sel.appendChild(o); });
+  }
+  function texto(el, t) { var li = document.createElement("li"); li.textContent = t; el.appendChild(li); }
+  function listas() {
+    var p = document.getElementById("pendientes"); p.innerHTML = "";
+    WALMAR.cola.todas().forEach(function (o) { texto(p, (o.tipo === "abordaje" ? "Abordaje " + o.codigo : "Reserva viaje " + o.viaje) + " · " + new Date(o.fecha || o.creada).toLocaleTimeString()); });
+    if (!p.children.length) texto(p, "Sin operaciones pendientes.");
+    var s = document.getElementById("sincronizados"); s.innerHTML = "";
+    WALMAR.leer(WALMAR.claves.resultados, []).slice(0, 15).forEach(function (r) { texto(s, r.resultado + " · " + (r.codigo || "") + (r.motivo ? " · " + r.motivo : "")); });
+    if (!s.children.length) texto(s, "Aún no hay resultados.");
+  }
+  function mostrar(r) {
+    var div = document.createElement("div");
+    div.className = "resultado " + r.resultado;
+    var g = document.createElement("div"); g.className = "grande";
+    g.textContent = r.resultado === "RECHAZADO" ? "✖ Rechazado" : "✔ Autorizado (pendiente de sincronizar)"; div.appendChild(g);
+    [r.pasajero, r.documento, r.motivo].forEach(function (t) { if (t) { var d = document.createElement("div"); d.textContent = t; div.appendChild(d); } });
+    var c = document.getElementById("resultado"); c.innerHTML = ""; c.appendChild(div);
+  }
+  document.getElementById("form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!sel.value || !codigo.value.trim()) return;
+    mostrar(WALMAR.validarLocal(sel.value, codigo.value));
+    codigo.value = ""; codigo.focus(); listas();
+    if (navigator.onLine) WALMAR.sincronizar();
+  });
+  document.getElementById("camara").addEventListener("click", function () {
+    WALMAR.iniciarLector(document.getElementById("lector"), function (v) { codigo.value = v; document.getElementById("form").requestSubmit(); });
+  });
+  document.getElementById("sync").addEventListener("click", function () {
+    if (!navigator.onLine) { alert("Sin conexión. Se sincronizará automáticamente al recuperar la señal."); return; }
+    WALMAR.sincronizar();
+  });
+  document.addEventListener("walmar:sincronizado", listas);
+  cargar(); listas();
+})();
+</script>
+{% endblock %}

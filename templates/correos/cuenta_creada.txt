@@ -1,0 +1,8 @@
+Hola {{ usuario.nombre }},
+
+Su cuenta en WALMAR fue creada correctamente con el correo {{ usuario.email }}.
+Ya puede consultar viajes, reservar y comprar pasajes en lancha entre Buenaventura y Timbiquí.
+
+Si usted no creó esta cuenta, comuníquese con nosotros.
+
+— WALMAR

@@ -1,0 +1,11 @@
+Hola {{ reserva.usuario.nombre }},
+
+{{ mensaje }}
+
+  Reserva: {{ reserva.codigo }}
+  Viaje: {{ viaje }}
+  Motivo: {{ motivo }}
+
+Puede consultar el detalle y tomar una decisión en "Mis reservas".
+
+— WALMAR

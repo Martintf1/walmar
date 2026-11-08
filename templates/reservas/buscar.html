@@ -1,0 +1,60 @@
+{% extends "base.html" %}{% load walmar %}
+{% block titulo %}Buscar viajes{% endblock %}
+{% block contenido %}
+<h1>Buscar viajes</h1>
+<div class="tarjeta mb">
+  <form method="get" class="formulario-busqueda" id="form-buscar" novalidate>
+    {% include "includes/campo.html" with campo=form.origen %}
+    {% include "includes/campo.html" with campo=form.destino %}
+    {% include "includes/campo.html" with campo=form.fecha %}
+    <div class="campo"><button class="btn btn-bloque" type="submit">Buscar</button></div>
+  </form>
+  {% for e in form.non_field_errors %}<div class="mensaje error mt">{{ e }}</div>{% endfor %}
+</div>
+
+{% if resultados is not None %}
+  {% if resultados %}
+    <p class="texto-2">{{ resultados|length }} salida{{ resultados|length|pluralize }} disponible{{ resultados|length|pluralize }} · {{ form.cleaned_data.fecha|date:"l j \d\e F" }}</p>
+    {% for v in resultados %}
+      <div class="tarjeta viaje">
+        <div>
+          <div class="hora">{{ v.hora_vigente|time:"H:i" }}</div>
+          {% if v.hora_cambiada %}<div class="tachado">Programada {{ v.hora_programada|time:"H:i" }}</div><span class="etq aviso">Ajuste por marea</span>{% endif %}
+        </div>
+        <div>
+          <strong>{{ v.origen }} → {{ v.destino }}</strong>
+          <div class="texto-2 pequeno">Duración estimada {{ v.ruta.duracion_texto }} · {{ v.punto_embarque.nombre }} · {{ v.lancha.nombre }}</div>
+        </div>
+        <div>
+          <div class="precio">{{ v.tarifa|cop }}</div>
+          <div class="pequeno {% if v.cupos_disponibles < 5 %}texto-rojo{% else %}texto-2{% endif %}">{{ v.cupos_disponibles }} cupo{{ v.cupos_disponibles|pluralize }} disponible{{ v.cupos_disponibles|pluralize }}</div>
+        </div>
+        <div>
+          {% if v.cupos_disponibles > 0 %}
+            <a class="btn btn-verde" href="{% url 'reservas:reservar' v.pk %}">Reservar</a>
+          {% else %}<span class="etq mal">Agotado</span>{% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="tarjeta centro">
+      <h2>Sin disponibilidad</h2>
+      <p class="texto-2 m0">No hay salidas habilitadas para la ruta y fecha seleccionadas. Pruebe con otra fecha.</p>
+    </div>
+  {% endif %}
+{% endif %}
+<div id="consultas-offline"></div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  // Guarda la consulta para verla sin conexión (RF-PWA-01).
+  var params = location.search.slice(1);
+  if (params && navigator.onLine) {
+    fetch("{% url 'reservas:api_viajes' %}?" + params, { credentials: "same-origin" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { if (j) WALMAR.guardarConsulta(params, j); }).catch(function () {});
+  }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block titulo %}{{ c.titulo }}{% endblock %}
+{% block contenido %}
+<div class="tarjeta" style="max-width:640px;margin:0 auto">
+  <h1>{% if obj %}Editar{% else %}Agregar{% endif %} {{ c.singular }}</h1>
+  <form method="post" novalidate>{% csrf_token %}{% include "includes/form.html" %}
+    <div class="fila"><button class="btn" type="submit">Guardar</button><a class="btn btn-sec" href="{% url 'operacion:config_lista' tipo %}">Cancelar</a></div></form>
+</div>
+{% endblock %}

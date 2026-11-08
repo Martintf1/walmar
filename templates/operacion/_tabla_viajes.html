@@ -1,0 +1,15 @@
+{% load walmar %}
+<div class="tabla-wrap"><table>
+  <thead><tr><th>Fecha</th><th>Hora</th><th>Sentido</th><th>Lancha</th><th>Grupo</th><th class="num">Ocupación</th><th class="num">Tarifa</th><th>Venta</th><th>Estado</th><th></th></tr></thead>
+  <tbody>{% for v in viajes %}
+    <tr>
+      <td>{{ v.fecha|date:"D d/m" }}</td>
+      <td>{{ v.hora_vigente|time:"H:i" }}{% if v.hora_cambiada %} <span class="tachado">{{ v.hora_programada|time:"H:i" }}</span>{% endif %}</td>
+      <td>{{ v.origen }} → {{ v.destino }}</td><td>{{ v.lancha.nombre }}</td><td>{{ v.grupo|default:"—" }}</td>
+      <td class="num">{{ v.cupos_ocupados }}/{{ v.cupos }}</td><td class="num">{{ v.tarifa|cop }}</td>
+      <td>{% if v.habilitado %}<span class="etq ok">Habilitada</span>{% else %}<span class="etq">No</span>{% endif %}</td>
+      <td><span class="etq {{ v.estado }}">{{ v.get_estado_display }}</span></td>
+      <td><div class="fila" style="flex-wrap:nowrap"><a class="btn btn-chico" href="{% url 'operacion:viaje_detalle' v.pk %}">Gestionar</a><a class="btn btn-sec btn-chico" href="{% url 'abordaje:manifiesto' v.pk %}">Manifiesto</a></div></td>
+    </tr>
+  {% empty %}<tr><td colspan="10">No hay salidas.</td></tr>{% endfor %}</tbody>
+</table></div>

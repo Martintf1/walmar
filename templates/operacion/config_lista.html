@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block titulo %}{{ c.titulo }}{% endblock %}
+{% block contenido %}
+<div class="fila entre mb"><div><a href="{% url 'operacion:configuracion' %}">‹ Configuración</a><h1 class="m0">{{ c.titulo }}</h1></div><a class="btn" href="{% url 'operacion:config_nuevo' tipo %}">+ Agregar</a></div>
+<div class="tarjeta tabla-wrap"><table>
+  <thead><tr>{% for _, t in c.columnas %}<th>{{ t }}</th>{% endfor %}<th></th></tr></thead>
+  <tbody>{% for obj, valores in filas %}<tr>{% for v in valores %}<td>{% if v is True %}<span class="etq ok">Sí</span>{% elif v is False %}<span class="etq">No</span>{% else %}{{ v|default_if_none:"—" }}{% endif %}</td>{% endfor %}<td><a class="btn btn-sec btn-chico" href="{% url 'operacion:config_editar' tipo obj.pk %}">Editar</a></td></tr>
+  {% empty %}<tr><td colspan="{{ c.columnas|length|add:1 }}">No hay registros.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

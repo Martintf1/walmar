@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% load walmar %}
+{% block titulo %}Solicitudes{% endblock %}
+{% block contenido %}
+<h1>Gestión de solicitudes de reembolso</h1>
+<form class="fila mb" method="get"><select name="estado" style="max-width:260px" onchange="this.form.submit()">
+  <option value="abiertas" {% if estado == "abiertas" %}selected{% endif %}>Abiertas</option>
+  <option value="" {% if not estado %}selected{% endif %}>Todas</option>
+  {% for v, l in estados %}<option value="{{ v }}" {% if v == estado %}selected{% endif %}>{{ l }}</option>{% endfor %}
+</select></form>
+<div class="tarjeta tabla-wrap"><table>
+  <thead><tr><th>#</th><th>Fecha aviso</th><th>Solicitante</th><th>Reserva / viaje</th><th>Tipo</th><th class="num">Pagado</th><th>Estado</th><th></th></tr></thead>
+  <tbody>{% for s in solicitudes %}<tr><td>#{{ s.pk }}</td><td class="pequeno">{{ s.fecha_solicitud|date:"d/m/Y H:i" }}</td><td>{{ s.solicitante.nombre }}</td><td class="pequeno">{{ s.reserva.codigo }}<br>{{ s.reserva.viaje }}</td><td class="pequeno">{{ s.get_tipo_display }}</td><td class="num">{{ s.valor_pagado|cop }}</td><td><span class="etq {{ s.estado }}">{{ s.get_estado_display }}</span></td><td><a class="btn btn-chico" href="{% url 'reembolsos:detalle' s.pk %}">Revisar</a></td></tr>
+  {% empty %}<tr><td colspan="8">No hay solicitudes.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

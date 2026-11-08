@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block titulo %}Términos y condiciones{% endblock %}
+{% block contenido %}
+<article class="tarjeta legal">
+  <h1>Términos y condiciones de uso</h1>
+  <p class="mensaje warning">Borrador propuesto por el equipo. Debe ser revisado y aprobado por el responsable legal y operativo antes de operar (ERS, Apéndice C).</p>
+  <h2>1. Objeto</h2>
+  <p>WALMAR es una plataforma para consultar, reservar y comprar pasajes de transporte de pasajeros en lancha en la ruta Buenaventura – Timbiquí. El servicio de transporte lo presta la empresa transportadora habilitada; WALMAR no reemplaza permisos, habilitaciones ni el zarpe expedidos por la autoridad marítima.</p>
+  <h2>2. Cuenta</h2>
+  <p>El usuario declara que los datos registrados son verdaderos y se compromete a mantener la confidencialidad de su contraseña. La recuperación del acceso se realiza mediante un código enviado al correo registrado.</p>
+  <h2>3. Reservas y pagos</h2>
+  <p>Una reserva aparta temporalmente los cupos con pago pendiente y no da derecho a abordar. Si no se paga en el plazo indicado, la reserva se cancela y los cupos se liberan. La compra se confirma únicamente cuando el servidor valida el pago (en línea o en efectivo en el punto de atención autorizado).</p>
+  <h2>4. Tiquetes y abordaje</h2>
+  <p>Cada pasajero recibe un tiquete digital con código único y QR, personal e intransferible, válido para un solo abordaje. El pasajero debe presentarse con su documento de identidad antes de la hora de zarpe. La hora de zarpe puede ajustarse por marea o condiciones del mar; el sistema mostrará siempre la hora vigente.</p>
+  <h2>5. Cambios, cancelaciones y devoluciones</h2>
+  <p>Se rigen por la <a href="{% url 'core:politica_cancelacion' %}">política de cancelación, reprogramación y devolución</a>, el Código de Comercio y el Estatuto del Consumidor (Ley 1480 de 2011).</p>
+  <h2>6. Comercio electrónico</h2>
+  <p>Las operaciones realizadas por medios electrónicos y los mensajes de datos tienen validez conforme a la Ley 527 de 1999. WALMAR conserva registro de las operaciones.</p>
+</article>
+{% endblock %}

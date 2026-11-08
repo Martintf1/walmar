@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% load walmar %}
+{% block titulo %}Mis solicitudes{% endblock %}
+{% block contenido %}
+<h1>Mis solicitudes de cancelación y devolución</h1>
+<div class="tarjeta tabla-wrap"><table>
+  <thead><tr><th>#</th><th>Reserva</th><th>Tipo</th><th>Fecha</th><th>Estado</th><th class="num">Valor autorizado</th></tr></thead>
+  <tbody>{% for s in solicitudes %}<tr><td><a href="{% url 'reembolsos:detalle' s.pk %}">#{{ s.pk }}</a></td><td>{{ s.reserva.codigo }}</td><td class="pequeno">{{ s.get_tipo_display }}</td><td class="pequeno">{{ s.fecha_solicitud|date:"d/m/Y H:i" }}</td><td><span class="etq {{ s.estado }}">{{ s.get_estado_display }}</span></td><td class="num">{{ s.valor_autorizado|cop }}</td></tr>
+  {% empty %}<tr><td colspan="6">No tiene solicitudes.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

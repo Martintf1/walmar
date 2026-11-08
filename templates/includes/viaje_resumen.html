@@ -1,0 +1,10 @@
+<dl class="datos">
+  <dt>Ruta</dt><dd>{{ viaje.origen }} → {{ viaje.destino }}</dd>
+  <dt>Fecha</dt><dd>{{ viaje.fecha|date:"l j \d\e F \d\e Y" }}</dd>
+  <dt>Hora de zarpe</dt><dd>{{ viaje.hora_vigente|time:"H:i" }}{% if viaje.hora_cambiada %} <span class="etq aviso">Ajustada</span> <span class="tachado">{{ viaje.hora_programada|time:"H:i" }}</span>{% endif %}</dd>
+  <dt>Duración estimada</dt><dd>{{ viaje.ruta.duracion_texto }}</dd>
+  <dt>Embarque</dt><dd>{{ viaje.punto_embarque }}</dd>
+  <dt>Desembarque</dt><dd>{{ viaje.punto_desembarque }}</dd>
+  <dt>Lancha</dt><dd>{{ viaje.lancha.nombre }} ({{ viaje.lancha.matricula }})</dd>
+  <dt>Estado</dt><dd><span class="etq {{ viaje.estado }}">{{ viaje.get_estado_display }}</span></dd>
+</dl>

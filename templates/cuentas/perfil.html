@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block titulo %}Mi cuenta{% endblock %}
+{% block contenido %}
+<div class="grid grid-2">
+  <div class="tarjeta">
+    <h1>Mi cuenta</h1>
+    <dl class="datos mb">
+      <dt>Correo</dt><dd>{{ user.email }}</dd>
+      <dt>Perfil</dt><dd>{{ user.get_rol_display }}</dd>
+      <dt>Registro</dt><dd>{{ user.date_joined|date:"d/m/Y" }}</dd>
+      {% if user.acepto_terminos_en %}<dt>Aceptó términos</dt><dd>{{ user.acepto_terminos_en|date:"d/m/Y H:i" }}</dd>{% endif %}
+    </dl>
+    <form method="post" novalidate>{% csrf_token %}{% include "includes/form.html" %}
+      <button class="btn" type="submit">Actualizar datos</button></form>
+  </div>
+  <div class="tarjeta">
+    <h2>Seguridad</h2>
+    <p class="texto-2">Para cambiar su contraseña, solicite un código a su correo.</p>
+    <a class="btn btn-sec" href="{% url 'cuentas:recuperar' %}">Cambiar contraseña</a>
+    <h2 class="mt">Sus datos personales</h2>
+    <p class="texto-2 pequeno">Puede consultar, actualizar y rectificar sus datos en este formulario, conforme a la <a href="{% url 'core:politica_datos' %}">política de tratamiento de datos</a>.</p>
+  </div>
+</div>
+{% endblock %}

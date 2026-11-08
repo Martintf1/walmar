@@ -1,0 +1,41 @@
+{% extends "base.html" %}{% load walmar %}
+{% block titulo %}Pago en efectivo{% endblock %}
+{% block contenido %}
+<div class="fila entre mb"><h1 class="m0">Reserva {{ reserva.codigo }}</h1><span class="etq {{ reserva.estado }}">{{ reserva.get_estado_display }}</span></div>
+<div class="grid grid-2">
+  <div class="tarjeta">
+    {% include "includes/viaje_resumen.html" with viaje=reserva.viaje %}
+    <h3 class="mt">Pasajeros</h3>
+    <ul>{% for p in pasajeros %}<li>{{ p.nombre }} — {{ p.tipo_documento }} {{ p.documento_enmascarado }}</li>{% endfor %}</ul>
+    <p class="pequeno texto-2">Titular de la reserva: {{ reserva.usuario.nombre }} ({{ reserva.usuario.email }})</p>
+  </div>
+  <div class="tarjeta">
+    <dl class="datos mb"><dt>Total a pagar</dt><dd class="kpi">{{ reserva.total|cop }}</dd>
+      {% if reserva.pendiente %}<dt>Plazo</dt><dd>{{ reserva.expira_en|date:"d/m/Y H:i" }}</dd>{% endif %}</dl>
+    {% if reserva.pendiente %}
+      <form method="post" novalidate>{% csrf_token %}
+        <div class="campo"><label for="valor">Valor recibido en efectivo (COP) *</label>
+          <input type="number" id="valor" name="valor_recibido" min="{{ reserva.total|floatformat:0 }}" step="1" value="{{ reserva.total|floatformat:0 }}" required inputmode="numeric"></div>
+        <p class="pequeno">Cambio: <strong id="cambio">$0</strong></p>
+        <button class="btn btn-verde btn-bloque">Confirmar pago y emitir tiquetes</button>
+      </form>
+    {% elif reserva.confirmada %}
+      <div class="mensaje success">Esta reserva ya está pagada.</div>
+      {% with p=reserva.pago_aprobado %}{% if p %}<a class="btn" href="{% url 'pagos:comprobante' p.referencia %}">Ver comprobante</a>{% endif %}{% endwith %}
+      <a class="btn btn-sec" href="{% url 'reservas:tiquetes_pdf' reserva.codigo %}">Tiquetes (PDF)</a>
+    {% else %}
+      <div class="mensaje error">La reserva no está pendiente de pago ({{ reserva.get_estado_display }}).</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var v = document.getElementById("valor"); if (!v) return;
+  var total = {{ reserva.total|floatformat:0 }};
+  function act() { var c = Number(v.value || 0) - total; document.getElementById("cambio").textContent = c >= 0 ? "$" + c.toLocaleString("es-CO") : "Valor insuficiente"; }
+  v.addEventListener("input", act); act();
+})();
+</script>
+{% endblock %}

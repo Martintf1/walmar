@@ -1,0 +1,8 @@
+Hola {{ usuario.nombre }},
+
+Se creó su cuenta de personal autorizado en WALMAR con el perfil: {{ usuario.get_rol_display }}.
+
+Para definir su contraseña ingrese a {{ url }}
+y use este código: {{ codigo }} (válido por 48 horas).
+
+— WALMAR

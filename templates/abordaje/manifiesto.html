@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block titulo %}Manifiesto{% endblock %}
+{% block contenido %}
+<div class="fila entre mb">
+  <div><h1 class="m0">Manifiesto de pasajeros</h1><div class="texto-2">{{ viaje }}</div></div>
+  <div class="fila no-imprimir"><a class="btn btn-sec" href="?formato=csv">Descargar CSV</a><button class="btn btn-sec" onclick="window.print()">Imprimir</button></div>
+</div>
+<div class="grid grid-4 mb">
+  <div class="tarjeta"><div class="kpi-label">Lancha</div><strong>{{ viaje.lancha.nombre }}</strong><div class="pequeno texto-2">{{ viaje.lancha.matricula }} · capacidad {{ viaje.lancha.capacidad_autorizada }}</div></div>
+  <div class="tarjeta"><div class="kpi-label">Zarpe</div><div class="kpi">{{ viaje.hora_vigente|time:"H:i" }}</div>{% if viaje.hora_cambiada %}<div class="tachado">{{ viaje.hora_programada|time:"H:i" }}</div>{% endif %}</div>
+  <div class="tarjeta"><div class="kpi-label">Pagados</div><div class="kpi">{{ total_pagados }}</div><div class="pequeno texto-2">de {{ filas|length }} registrados</div></div>
+  <div class="tarjeta"><div class="kpi-label">A bordo</div><div class="kpi">{{ total_abordo }}</div></div>
+</div>
+<div class="tarjeta tabla-wrap">
+  <table>
+    <thead><tr><th>#</th><th>Pasajero</th><th>Documento</th><th>Teléfono</th><th>Reserva</th><th>Tiquete</th><th>Pago</th><th>Abordaje</th></tr></thead>
+    <tbody>{% for f in filas %}
+      <tr><td>{{ forloop.counter }}</td><td>{{ f.pasajero.nombre }}</td><td>{{ f.pasajero.tipo_documento }} {{ f.pasajero.documento }}</td><td>{{ f.pasajero.telefono|default:"—" }}</td>
+        <td><code>{{ f.reserva.codigo }}</code></td><td>{% if f.tiquete %}<code>{{ f.tiquete.codigo }}</code>{% else %}—{% endif %}</td>
+        <td><span class="etq {% if f.reserva.confirmada %}ok{% else %}aviso{% endif %}">{{ f.estado_pago }}</span> <span class="pequeno texto-2">{{ f.medio_pago }}</span></td>
+        <td>{% if f.abordo %}<span class="etq ok">A bordo</span>{% else %}<span class="etq">Pendiente</span>{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="8">No hay pasajeros registrados para esta salida.</td></tr>{% endfor %}</tbody>
+  </table>
+</div>
+<p class="pequeno texto-2 mt">Documento con datos personales de uso restringido (Ley 1581 de 2012). Información exigida por la autoridad competente pendiente de confirmar con la DIMAR.</p>
+{% endblock %}
