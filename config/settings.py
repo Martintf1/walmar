@@ -10,6 +10,24 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+def cargar_env(ruta):
+    """Carga variables desde un archivo .env (CLAVE=valor) sin pisar las ya definidas."""
+    if not ruta.exists():
+        return
+    for linea in ruta.read_text(encoding="utf-8").splitlines():
+        linea = linea.strip()
+        if not linea or linea.startswith("#") or "=" not in linea:
+            continue
+        clave, valor = linea.split("=", 1)
+        valor = valor.strip()
+        if len(valor) >= 2 and valor[0] == valor[-1] and valor[0] in "\"'":
+            valor = valor[1:-1]
+        os.environ.setdefault(clave.strip(), valor)
+
+
+cargar_env(BASE_DIR / ".env")
+
+
 def env_bool(name, default=False):
     return os.environ.get(name, str(default)).lower() in ("1", "true", "yes", "si", "sí")
 
@@ -120,14 +138,31 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Correo (SMTP). En desarrollo los correos se imprimen en consola.
-EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "localhost")
+# Correo (SMTP). Si se define EMAIL_HOST_USER se envía por SMTP real
+# (ver .env.example); si no, los correos se imprimen en la consola.
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "WALMAR <no-responder@walmar.local>")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "").replace(" ", "")
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", EMAIL_PORT != 465)
+EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", EMAIL_PORT == 465)
+EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", "15"))
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.smtp.EmailBackend" if EMAIL_HOST_USER else "django.core.mail.backends.console.EmailBackend",
+)
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL",
+    f"WALMAR <{EMAIL_HOST_USER}>" if EMAIL_HOST_USER else "WALMAR <no-responder@walmar.local>",
+)
+
+# Los errores de envío de correo se registran en la consola del servidor.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"consola": {"class": "logging.StreamHandler"}},
+    "loggers": {"core.notificaciones": {"handlers": ["consola"], "level": "INFO"}},
+}
 
 # Seguridad (RNF-03): HTTPS forzado fuera de desarrollo.
 if not DEBUG:

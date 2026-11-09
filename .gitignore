@@ -6,3 +6,4 @@ staticfiles/
 .env
 .venv/
 venv/
+credenciales-demo.txt

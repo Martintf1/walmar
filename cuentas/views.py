@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 from django.views.decorators.http import require_POST
 
 from core import notificaciones
@@ -91,7 +91,7 @@ def recuperar(request):
             )
             registrar(usuario, "codigo_recuperacion", usuario.email)
         messages.info(request, "Si el correo está registrado, recibirá un código de 6 dígitos para definir una nueva contraseña.")
-        return redirect(f"{reverse('cuentas:recuperar_confirmar')}?email={email}")
+        return redirect(f"{reverse('cuentas:recuperar_confirmar')}?{urlencode({'email': email})}")
     return render(request, "cuentas/recuperar.html", {"form": form})
 
 
@@ -147,7 +147,7 @@ def personal_crear(request):
             {
                 "usuario": usuario,
                 "codigo": codigo,
-                "url": request.build_absolute_uri(reverse("cuentas:recuperar_confirmar") + f"?email={usuario.email}"),
+                "url": request.build_absolute_uri(reverse("cuentas:recuperar_confirmar") + "?" + urlencode({"email": usuario.email})),
             },
         )
         registrar(request.user, "personal_creado", usuario.email, rol=usuario.rol)

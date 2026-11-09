@@ -28,7 +28,24 @@ Abra <http://127.0.0.1:8000>. Con `--demo` se crean estos usuarios (contraseña 
 | Personal de abordaje | abordaje@walmar.local |
 | Pasajero | pasajero@walmar.local |
 
-Los correos (cuenta creada, código de recuperación, notificaciones) se imprimen en la consola en desarrollo.
+Las cuentas, los códigos de recuperación y el resto de datos se guardan en la base de datos `db.sqlite3`, que se crea con `migrate`.
+
+### Envío real de correos (código de recuperación)
+
+Sin configuración, los correos (cuenta creada, código de recuperación, notificaciones) se imprimen en la consola. Para enviarlos a la bandeja de entrada:
+
+1. Copie `.env.example` como `.env`.
+2. Complete `EMAIL_HOST_USER` y `EMAIL_HOST_PASSWORD`. Con Gmail, use una **contraseña de aplicación** (<https://myaccount.google.com/apppasswords>, requiere la verificación en dos pasos), no su contraseña normal.
+3. Verifique la configuración con `python manage.py probar_correo destino@ejemplo.com`.
+
+El código de recuperación tiene 6 dígitos, vence en 15 minutos, admite 5 intentos y solo se guarda su hash (SHA-256) en la base de datos.
+
+### Abrir la app desde otros dispositivos
+
+- **Misma red Wi-Fi:** agregue la IP del computador a `DJANGO_ALLOWED_HOSTS` en `.env` y ejecute `python manage.py runserver 0.0.0.0:8000`. Luego abra `http://<IP>:8000` desde el otro dispositivo (permita Python en el Firewall de Windows).
+- **Cualquier red (enlace público temporal):** con [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) instalado y el servidor corriendo, ejecute `cloudflared tunnel --url http://127.0.0.1:8000`. Muestra un enlace `https://….trycloudflare.com` que cambia en cada ejecución.
+
+Antes de exponer la app a internet, cambie las contraseñas de los usuarios demo: la contraseña por defecto aparece en este README.
 
 Pruebas automáticas:
 
